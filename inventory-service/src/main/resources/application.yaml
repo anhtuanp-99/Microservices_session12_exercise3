@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: inventory-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_db
+    username: postgres
+    password: anhtuansql
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  # ===== REDIS =====
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: inventory-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.pharmacy.*"
+        spring.json.value.default.type: com.pharmacy.inventoryservice.event.OrderCreatedEvent
+        spring.json.use.type.headers: false
+    listener:
+      ack-mode: record
+      concurrency: 3
+
+server:
+  port: 8088
+
+app:
+  kafka:
+    topic:
+      order-events: order-events
+
+logging:
+  level:
+    com.pharmacy.inventoryservice: DEBUG
+    org.redisson: INFO
